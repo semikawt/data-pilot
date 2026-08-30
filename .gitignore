@@ -1,0 +1,5 @@
+# 真实密钥不入库（本地 secrets.toml 仅自己用）
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
+.streamlit/cache/
