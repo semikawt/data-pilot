@@ -78,7 +78,7 @@ with st.sidebar:
         else:
             st.error("文件均解析失败，请检查格式。")
 
-    if st.button("✨ 用样例数据体验", use_container_width=True):
+    if st.button("✨ 用样例数据体验", width="stretch"):
         set_data("样例·销售明细", eda.get_sample_data())
 
     st.divider()
@@ -88,7 +88,7 @@ with st.sidebar:
                      if st.session_state.active in vf else 0,
                      key="active_sel",
                      on_change=lambda: st.session_state.__setitem__("active", st.session_state.active_sel))
-    if st.button("🏠 返回首页", use_container_width=True):
+    if st.button("🏠 返回首页", width="stretch"):
         st.session_state.page = "home"
         st.rerun()
 
@@ -100,14 +100,13 @@ with st.sidebar:
     with st.expander("⚙️ AI 接口设置（可选）"):
         st.caption("填自己的 API 即可升级为大模型分析；留空则用本地规则，功能照常可用。"
                    "密钥仅保存在当前会话，不会写入代码或上传。")
-        st.text_input("API Key", type="password",
-                      value=st.session_state.get("llm_api_key", ""),
-                      key="llm_api_key", placeholder="sk-...（兼容 OpenAI 格式的 Key）")
-        st.text_input("Base URL（可留空）", value=st.session_state.get("llm_base_url", ""),
-                      key="llm_base_url", placeholder="https://api.openai.com/v1")
-        st.text_input("模型名", value=st.session_state.get("llm_model") or "gpt-4o-mini",
-                      key="llm_model", placeholder="gpt-4o-mini / deepseek-chat / qwen-plus")
-        if st.button("🔌 测试连接", use_container_width=True):
+        st.text_input("API Key", type="password", key="llm_api_key",
+                      placeholder="sk-...（兼容 OpenAI 格式的 Key）")
+        st.text_input("Base URL（可留空）", key="llm_base_url",
+                      placeholder="https://api.openai.com/v1")
+        st.text_input("模型名", key="llm_model",
+                      placeholder="gpt-4o-mini / deepseek-chat / qwen-plus")
+        if st.button("🔌 测试连接", width="stretch"):
             if not ai_assistant.llm_configured():
                 st.error("未检测到可用的 API Key（或缺少 openai 库）。")
             else:
@@ -182,18 +181,18 @@ def render_workspace():
             "缺失数": [prof["missing"][c] for c in prof["columns"]],
             "缺失率": [f"{prof['missing_pct'][c]}%" for c in prof["columns"]],
         })
-        st.dataframe(type_df, use_container_width=True, height=200)
+        st.dataframe(type_df, width="stretch", height=200)
         if prof["describe"]:
             st.markdown("**关键统计（数值列）**")
-            st.dataframe(pd.DataFrame(prof["describe"]).T, use_container_width=True)
+            st.dataframe(pd.DataFrame(prof["describe"]).T, width="stretch")
         if prof["datetime"] and prof["numeric"]:
             pass
         cm = eda.correlation_matrix(df)
         if cm is not None:
             st.markdown("**相关性热力图**")
-            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm), use_container_width=True)
+            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm), width="stretch")
         st.markdown("**数据预览（前 5 行）**")
-        st.dataframe(prof["head"], use_container_width=True)
+        st.dataframe(prof["head"], width="stretch")
 
     # ---- 智能图表 ----
     with tab2:
@@ -205,7 +204,7 @@ def render_workspace():
                 if st.button("插入此图", key="rec_" + r["title"]):
                     st.session_state.chart_specs.append(r)
                     st.plotly_chart(charts.render_chart(df, r["type"], r.get("x"), r.get("y")),
-                                    use_container_width=True)
+                                    width="stretch")
         st.divider()
         st.markdown("##### 🛠 自定义图表")
         ctype = st.selectbox("图表类型", charts.VALID_TYPES)
@@ -214,7 +213,7 @@ def render_workspace():
         if st.button("生成图表", key="custom_gen"):
             fig = charts.render_chart(df, ctype, xcol, ycol)
             st.session_state.chart_specs.append({"type": ctype, "x": xcol, "y": ycol, "title": f"{ctype}: {xcol}/{ycol}"})
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
     # ---- AI 助手 ----
     with tab3:
@@ -229,10 +228,10 @@ def render_workspace():
                     if ch["type"] == "heatmap":
                         cm2 = eda.correlation_matrix(df)
                         if cm2 is not None:
-                            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm2), use_container_width=True)
+                            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm2), width="stretch")
                     else:
                         st.plotly_chart(charts.render_chart(df, ch["type"], ch.get("x"), ch.get("y")),
-                                        use_container_width=True)
+                                        width="stretch")
         q = st.chat_input("向这份数据提问，例如：哪类客户复购最高？")
         if q:
             with st.chat_message("user"):
@@ -245,10 +244,10 @@ def render_workspace():
                     if ch["type"] == "heatmap":
                         cm3 = eda.correlation_matrix(df)
                         if cm3 is not None:
-                            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm3), use_container_width=True)
+                            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm3), width="stretch")
                     else:
                         st.plotly_chart(charts.render_chart(df, ch["type"], ch.get("x"), ch.get("y")),
-                                        use_container_width=True)
+                                        width="stretch")
             st.session_state.qa.append({"q": q, "a": res["answer"], "chart": res.get("chart")})
 
     # ---- 报告 ----
