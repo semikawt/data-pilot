@@ -10,6 +10,21 @@ import charts
 import ai_assistant
 import report
 
+
+# ---- Streamlit 版本兼容：宽度参数 ----
+# 新版(>=1.50)用 width=，旧版用 use_container_width=，旧版 button 干脆不支持。
+# 这里按当前安装的 Streamlit 自动选择，保证任何环境都不因该参数报错。
+def _supports_width(func):
+    try:
+        import inspect
+        return "width" in inspect.signature(func).parameters
+    except Exception:
+        return False
+
+
+_FRAME_W = {"width": "stretch"} if _supports_width(st.plotly_chart) else {"use_container_width": True}
+_BTN_W = {"width": "stretch"} if _supports_width(st.button) else {}
+
 PRIMARY = "#4472C4"
 st.set_page_config(page_title="DataPilot · AI 数据分析助手", page_icon="📊", layout="wide",
                    initial_sidebar_state="expanded")
@@ -78,7 +93,7 @@ with st.sidebar:
         else:
             st.error("文件均解析失败，请检查格式。")
 
-    if st.button("✨ 用样例数据体验", width="stretch"):
+    if st.button("✨ 用样例数据体验", **_BTN_W):
         set_data("样例·销售明细", eda.get_sample_data())
 
     st.divider()
@@ -88,7 +103,7 @@ with st.sidebar:
                      if st.session_state.active in vf else 0,
                      key="active_sel",
                      on_change=lambda: st.session_state.__setitem__("active", st.session_state.active_sel))
-    if st.button("🏠 返回首页", width="stretch"):
+    if st.button("🏠 返回首页", **_BTN_W):
         st.session_state.page = "home"
         st.rerun()
 
@@ -106,7 +121,7 @@ with st.sidebar:
                       placeholder="https://api.openai.com/v1")
         st.text_input("模型名", key="llm_model",
                       placeholder="gpt-4o-mini / deepseek-chat / qwen-plus")
-        if st.button("🔌 测试连接", width="stretch"):
+        if st.button("🔌 测试连接", **_BTN_W):
             if not ai_assistant.llm_configured():
                 st.error("未检测到可用的 API Key（或缺少 openai 库）。")
             else:
@@ -181,18 +196,18 @@ def render_workspace():
             "缺失数": [prof["missing"][c] for c in prof["columns"]],
             "缺失率": [f"{prof['missing_pct'][c]}%" for c in prof["columns"]],
         })
-        st.dataframe(type_df, width="stretch", height=200)
+        st.dataframe(type_df, **_FRAME_W, height=200)
         if prof["describe"]:
             st.markdown("**关键统计（数值列）**")
-            st.dataframe(pd.DataFrame(prof["describe"]).T, width="stretch")
+            st.dataframe(pd.DataFrame(prof["describe"]).T, **_FRAME_W)
         if prof["datetime"] and prof["numeric"]:
             pass
         cm = eda.correlation_matrix(df)
         if cm is not None:
             st.markdown("**相关性热力图**")
-            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm), width="stretch")
+            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm), **_FRAME_W)
         st.markdown("**数据预览（前 5 行）**")
-        st.dataframe(prof["head"], width="stretch")
+        st.dataframe(prof["head"], **_FRAME_W)
 
     # ---- 智能图表 ----
     with tab2:
@@ -204,7 +219,7 @@ def render_workspace():
                 if st.button("插入此图", key="rec_" + r["title"]):
                     st.session_state.chart_specs.append(r)
                     st.plotly_chart(charts.render_chart(df, r["type"], r.get("x"), r.get("y")),
-                                    width="stretch")
+                                    **_FRAME_W)
         st.divider()
         st.markdown("##### 🛠 自定义图表")
         ctype = st.selectbox("图表类型", charts.VALID_TYPES)
@@ -213,7 +228,7 @@ def render_workspace():
         if st.button("生成图表", key="custom_gen"):
             fig = charts.render_chart(df, ctype, xcol, ycol)
             st.session_state.chart_specs.append({"type": ctype, "x": xcol, "y": ycol, "title": f"{ctype}: {xcol}/{ycol}"})
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, **_FRAME_W)
 
     # ---- AI 助手 ----
     with tab3:
@@ -228,10 +243,10 @@ def render_workspace():
                     if ch["type"] == "heatmap":
                         cm2 = eda.correlation_matrix(df)
                         if cm2 is not None:
-                            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm2), width="stretch")
+                            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm2), **_FRAME_W)
                     else:
                         st.plotly_chart(charts.render_chart(df, ch["type"], ch.get("x"), ch.get("y")),
-                                        width="stretch")
+                                        **_FRAME_W)
         q = st.chat_input("向这份数据提问，例如：哪类客户复购最高？")
         if q:
             with st.chat_message("user"):
@@ -244,10 +259,10 @@ def render_workspace():
                     if ch["type"] == "heatmap":
                         cm3 = eda.correlation_matrix(df)
                         if cm3 is not None:
-                            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm3), width="stretch")
+                            st.plotly_chart(charts.render_chart(df, "heatmap", corr=cm3), **_FRAME_W)
                     else:
                         st.plotly_chart(charts.render_chart(df, ch["type"], ch.get("x"), ch.get("y")),
-                                        width="stretch")
+                                        **_FRAME_W)
             st.session_state.qa.append({"q": q, "a": res["answer"], "chart": res.get("chart")})
 
     # ---- 报告 ----
