@@ -2,6 +2,8 @@
 
 > 把一份表格变成可决策的结论——上传、自动分析、对话追问、一键导出报告。
 
+**🔗 在线体验**：https://data-pilot-nn2bt.streamlit.app/
+
 DataPilot 是面向**业务/运营/产品同学**的 AI 数据分析产品：不需要写代码，也不需要懂 Python，
 上传 CSV / Excel 就能完成过去要数据分析师花半天做的事。本项目由原本的 AI 数据分析 demo 重构为
 产品级应用，强调**价值主张清晰、交互稳定、永远可用**。
@@ -72,6 +74,10 @@ OPENAI_MODEL = "gpt-4o-mini"
 5. 部署完成后得到 `https://<你的名字>-data-pilot.streamlit.app` 公网链接，可直接放进简历/作品集。
 
 > 部署后代码更新会自动同步：本地改完推到 GitHub，线上 App 会自动重新部署。
+
+> ⚠️ **务必检查可见性**：Streamlit Cloud 新应用默认是 **Private**（访客点开会被要求登录）。
+> 进 https://share.streamlit.io → 选应用 → 右下角 **Settings（⚙️）→ Sharing**，把可见性改为 **Public**，
+> 否则别人点链接看不到内容。
 
 ## 目录结构
 
